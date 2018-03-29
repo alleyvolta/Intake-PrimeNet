@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EE4F5EC82069D9030054BA7C /* block.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EE4F5EC62069D9030054BA7C /* block.cpp */; };
+		EE4F5ECB2069D9100054BA7C /* cell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EE4F5EC92069D9100054BA7C /* cell.cpp */; };
+		EE4F5ECE2069D91E0054BA7C /* grid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EE4F5ECC2069D91E0054BA7C /* grid.cpp */; };
 		EE671762206256930028097B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EE671761206256930028097B /* main.cpp */; };
 /* End PBXBuildFile section */
 
@@ -23,6 +26,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		EE4F5EC62069D9030054BA7C /* block.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = block.cpp; sourceTree = "<group>"; };
+		EE4F5EC72069D9030054BA7C /* block.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = block.hpp; sourceTree = "<group>"; };
+		EE4F5EC92069D9100054BA7C /* cell.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = cell.cpp; sourceTree = "<group>"; };
+		EE4F5ECA2069D9100054BA7C /* cell.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = cell.hpp; sourceTree = "<group>"; };
+		EE4F5ECC2069D91E0054BA7C /* grid.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = grid.cpp; sourceTree = "<group>"; };
+		EE4F5ECD2069D91E0054BA7C /* grid.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = grid.hpp; sourceTree = "<group>"; };
 		EE67175E206256930028097B /* Intake-PrimeNet */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Intake-PrimeNet"; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE671761206256930028097B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -58,6 +67,12 @@
 			isa = PBXGroup;
 			children = (
 				EE671761206256930028097B /* main.cpp */,
+				EE4F5EC62069D9030054BA7C /* block.cpp */,
+				EE4F5EC72069D9030054BA7C /* block.hpp */,
+				EE4F5EC92069D9100054BA7C /* cell.cpp */,
+				EE4F5ECA2069D9100054BA7C /* cell.hpp */,
+				EE4F5ECC2069D91E0054BA7C /* grid.cpp */,
+				EE4F5ECD2069D91E0054BA7C /* grid.hpp */,
 			);
 			path = "Intake-PrimeNet";
 			sourceTree = "<group>";
@@ -120,6 +135,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				EE671762206256930028097B /* main.cpp in Sources */,
+				EE4F5EC82069D9030054BA7C /* block.cpp in Sources */,
+				EE4F5ECB2069D9100054BA7C /* cell.cpp in Sources */,
+				EE4F5ECE2069D91E0054BA7C /* grid.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -233,6 +251,57 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = /usr/local/Cellar/opencv/3.4.1_2/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/Cellar/opencv/3.4.1_2/lib;
+				OTHER_LDFLAGS = (
+					"-I/usr/local/Cellar/opencv/3.4.1_2/include/opencv",
+					"-I/usr/local/Cellar/opencv/3.4.1_2/include",
+					"-L/usr/local/Cellar/opencv/3.4.1_2/lib",
+					"-lopencv_stitching",
+					"-lopencv_superres",
+					"-lopencv_videostab",
+					"-lopencv_aruco",
+					"-lopencv_bgsegm",
+					"-lopencv_bioinspired",
+					"-lopencv_ccalib",
+					"-lopencv_dnn_objdetect",
+					"-lopencv_dpm",
+					"-lopencv_face",
+					"-lopencv_photo",
+					"-lopencv_fuzzy",
+					"-lopencv_hfs",
+					"-lopencv_img_hash",
+					"-lopencv_line_descriptor",
+					"-lopencv_optflow",
+					"-lopencv_reg",
+					"-lopencv_rgbd",
+					"-lopencv_saliency",
+					"-lopencv_stereo",
+					"-lopencv_structured_light",
+					"-lopencv_phase_unwrapping",
+					"-lopencv_surface_matching",
+					"-lopencv_tracking",
+					"-lopencv_datasets",
+					"-lopencv_text",
+					"-lopencv_dnn",
+					"-lopencv_plot",
+					"-lopencv_xfeatures2d",
+					"-lopencv_shape",
+					"-lopencv_video",
+					"-lopencv_ml",
+					"-lopencv_ximgproc",
+					"-lopencv_calib3d",
+					"-lopencv_features2d",
+					"-lopencv_highgui",
+					"-lopencv_videoio",
+					"-lopencv_flann",
+					"-lopencv_xobjdetect",
+					"-lopencv_imgcodecs",
+					"-lopencv_objdetect",
+					"-lopencv_xphoto",
+					"-lopencv_imgproc",
+					"-lopencv_core",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -241,6 +310,57 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = /usr/local/Cellar/opencv/3.4.1_2/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/Cellar/opencv/3.4.1_2/lib;
+				OTHER_LDFLAGS = (
+					"-I/usr/local/Cellar/opencv/3.4.1_2/include/opencv",
+					"-I/usr/local/Cellar/opencv/3.4.1_2/include",
+					"-L/usr/local/Cellar/opencv/3.4.1_2/lib",
+					"-lopencv_stitching",
+					"-lopencv_superres",
+					"-lopencv_videostab",
+					"-lopencv_aruco",
+					"-lopencv_bgsegm",
+					"-lopencv_bioinspired",
+					"-lopencv_ccalib",
+					"-lopencv_dnn_objdetect",
+					"-lopencv_dpm",
+					"-lopencv_face",
+					"-lopencv_photo",
+					"-lopencv_fuzzy",
+					"-lopencv_hfs",
+					"-lopencv_img_hash",
+					"-lopencv_line_descriptor",
+					"-lopencv_optflow",
+					"-lopencv_reg",
+					"-lopencv_rgbd",
+					"-lopencv_saliency",
+					"-lopencv_stereo",
+					"-lopencv_structured_light",
+					"-lopencv_phase_unwrapping",
+					"-lopencv_surface_matching",
+					"-lopencv_tracking",
+					"-lopencv_datasets",
+					"-lopencv_text",
+					"-lopencv_dnn",
+					"-lopencv_plot",
+					"-lopencv_xfeatures2d",
+					"-lopencv_shape",
+					"-lopencv_video",
+					"-lopencv_ml",
+					"-lopencv_ximgproc",
+					"-lopencv_calib3d",
+					"-lopencv_features2d",
+					"-lopencv_highgui",
+					"-lopencv_videoio",
+					"-lopencv_flann",
+					"-lopencv_xobjdetect",
+					"-lopencv_imgcodecs",
+					"-lopencv_objdetect",
+					"-lopencv_xphoto",
+					"-lopencv_imgproc",
+					"-lopencv_core",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
