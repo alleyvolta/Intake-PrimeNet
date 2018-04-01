@@ -343,14 +343,26 @@ void grid::update_grid_image(){
 Mat grid::get_grid_image(){
     return grid_image;
 };
+
+#include <random>
+#include <chrono>
+
+using namespace std::chrono;
+
 // **************************************************************************
 int main(int argc, const char * argv[]) {
 // **************************************************************************
     //
+    int prime = 11;
     ofstream outputStream;
     grid plane1;
     vector<int> indicies;
     vector<Point> locations;
+    vector<bool> location_state(prime, false);
+    unsigned seed = static_cast<int> (system_clock::now().time_since_epoch().count());
+    mt19937 generator(seed);
+    uniform_int_distribution<int> distribution(0,(16-1));
+    
     //
     outputStream.open("/Users/avitullo/Documents/imageLabeling-test.txt", ios::out | ios::app);
     if (!outputStream)   // Test for error.
@@ -359,10 +371,22 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     //
-    for (int i=0; i<(16); i++) {
+    for (int i=0; i<prime; i++) {
+        int num = distribution(generator);
+        //
+        if (location_state[num] == false) {
+            indicies.push_back(num);
+            location_state[num] = true;
+        }
+        else{
         
-            indicies.push_back(i);
-        
+            while (location_state[num] == true) {
+                num = distribution(generator);
+            }
+                indicies.push_back(num);
+                location_state[num] = true;
+            }
+        cout << endl << "Num> " << num << "\t Location state> " << location_state[num]  << endl;
     }
     for (int i=0; i<indicies.size(); i++) {
         locations.push_back(plane1.get_grid_index(indicies[i]));
