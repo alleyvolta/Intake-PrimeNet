@@ -19,8 +19,8 @@ using namespace cv;
 //
 const int SCALING_FACTOR = 4;
 const int GRID_SIZE = 256;
-const int CELL_SIZE = 8;
-const int BLOCK_SIZE = 4;
+const int CELL_SIZE = 4;
+const int BLOCK_SIZE = 32;
 
 enum INTENSITY:uchar {DARK=0, BRIGHT=255};
 
@@ -360,9 +360,9 @@ int main(int argc, const char * argv[]) {
     }
     //
     for (int i=0; i<(16); i++) {
-        if(i%2==0){
+        
             indicies.push_back(i);
-        }
+        
     }
     for (int i=0; i<indicies.size(); i++) {
         locations.push_back(plane1.get_grid_index(indicies[i]));
