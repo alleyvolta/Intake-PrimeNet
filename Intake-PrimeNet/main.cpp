@@ -33,6 +33,7 @@ class block {
 public:
     block();
     block(int size, Point startingPoint);
+    block(int size, Point startingPoint, INTENSITY intensity);
     ~block();
     //
     unsigned int getBlockID();
@@ -70,6 +71,12 @@ block::block(int size, Point startingPoint): blockID(ID++){
     setBlock_positions(startingPoint);
     set_block_size(size);
     setBlockIntensity(BRIGHT);
+};
+block::block(int size, Point startingPoint, INTENSITY intensity): blockID(ID++){
+    // CUSTOM BLOCK W/ GIVEN INITIAL POSITION
+    setBlock_positions(startingPoint);
+    set_block_size(size);
+    setBlockIntensity(intensity);
 };
 block::~block(){
     //
@@ -126,6 +133,7 @@ class cell {
 public:
     cell();
     cell(Point startingPoint);
+    cell(Point startingPoint, INTENSITY intensity);
     cell(int size, Point position);
     ~cell();
     unsigned int get_cellID();
@@ -134,7 +142,7 @@ public:
     void set_cell_size( int size);
     void set_grid_location(Point p);
     vector < vector<block> > get_cell_blocks();
-    void form_cell_blocks(Point startingPoint);
+    void form_cell_blocks(Point startingPoint, INTENSITY intensity);
     void form_cell_blocks(int block_size, Point startingPoint);
     void show_cell_();
 private:
@@ -155,17 +163,22 @@ cell::cell(): cellID(ID++){
     Point off_grid(-GRID_SIZE,-GRID_SIZE);
     set_grid_location(off_grid);
     set_cell_size(CELL_SIZE);
-    form_cell_blocks(grid_location);
+    form_cell_blocks(grid_location, BRIGHT);
 };
 cell::cell(Point startingPoint): cellID(ID++){
     set_grid_location(startingPoint);
     set_cell_size(CELL_SIZE);
-    form_cell_blocks(startingPoint);
+    form_cell_blocks(startingPoint, BRIGHT);
+};
+cell::cell(Point startingPoint, INTENSITY intensity): cellID(ID++){
+    set_grid_location(startingPoint);
+    set_cell_size(CELL_SIZE);
+    form_cell_blocks(startingPoint, intensity);
 };
 cell::cell(int size, Point startingPoint): cellID(ID++){
     set_grid_location(startingPoint);
     set_cell_size(cell_size);
-    form_cell_blocks(grid_location);
+    form_cell_blocks(grid_location, BRIGHT);
 };
 cell::~cell(){
 
@@ -185,7 +198,7 @@ void cell::set_grid_location(Point p){
 vector < vector<block> > cell::get_cell_blocks(){
     return cell_blocks;
 };
-void cell::form_cell_blocks(Point startingPoint){
+void cell::form_cell_blocks(Point startingPoint, INTENSITY intensity){
     vector<block> row;
     int tempX, tempY;
     //
@@ -194,7 +207,7 @@ void cell::form_cell_blocks(Point startingPoint){
             tempX=startingPoint.x + (cell_size*k);
             tempY=startingPoint.y + (cell_size*l);
             Point loc(tempX,tempY);
-            block bloc(BLOCK_SIZE, loc);
+            block bloc(BLOCK_SIZE, loc, intensity);
             row.push_back(bloc);
         }
         cell_blocks.push_back(row);
@@ -225,11 +238,12 @@ public:
     grid();
     grid(int size);
     grid(vector<Point> cell_locations);
+    grid(vector<Point> cell_locations, INTENSITY intensity);
     grid(int size, vector<Point> cell_locations);
     ~grid();
     int get_grid_size();
     void set_grid_size(int size);
-    void place_cell(Point cell_location);
+    void place_cell(Point cell_location, INTENSITY intensity);
     void update_grid_image();
     Point get_grid_index(int index);
     Mat get_grid_image();
@@ -248,12 +262,21 @@ grid::grid(){
     m_index_grid();
 };
 grid::grid(vector<Point> cell_locations){
+    Mat blank_image(GRID_SIZE, GRID_SIZE, CV_8UC1, Scalar(127));
+    blank_image.copyTo(grid_image);
+    set_grid_size(GRID_SIZE);
+    m_index_grid();
+    for (int i=0; i<cell_locations.size(); i++) {
+        place_cell(cell_locations[i], BRIGHT);
+    }
+};
+grid::grid(vector<Point> cell_locations, INTENSITY intensity){
     Mat blank_image(GRID_SIZE, GRID_SIZE, CV_8UC1, Scalar(0));
     blank_image.copyTo(grid_image);
     set_grid_size(GRID_SIZE);
     m_index_grid();
     for (int i=0; i<cell_locations.size(); i++) {
-        place_cell(cell_locations[i]);
+        place_cell(cell_locations[i], intensity);
     }
 };
 grid::grid(int size){
@@ -271,8 +294,8 @@ grid::grid(int size, vector<Point> cell_locations){
 grid::~grid(){
     // DELETE VOLATILE MEMBERS
 }
-void grid::place_cell(Point cell_location){
-    cell C(cell_location);
+void grid::place_cell(Point cell_location, INTENSITY intensity){
+    cell C(cell_location, intensity);
     for (int i=0; i<grid_index_ID.size(); i++) {
         if (cell_location==grid_index[i]) {
             C.grid_index_ID=grid_index_ID[i];
@@ -346,6 +369,23 @@ Mat grid::get_grid_image(){
 
 #include <random>
 #include <chrono>
+#include <ctime>
+#include <algorithm>
+
+void comb(int N, int K)
+{
+    std::string bitmask(K, 1); // K leading 1's
+    bitmask.resize(N, 0); // N-K trailing 0's
+    
+    // print integers and permute bitmask
+    do {
+        for (int i = 0; i < N; ++i) // [0..N-1] integers
+        {
+            if (bitmask[i]) std::cout << " " << i;
+        }
+        std::cout << std::endl;
+    } while (std::prev_permutation(bitmask.begin(), bitmask.end()));
+}
 
 using namespace std::chrono;
 
@@ -353,50 +393,79 @@ using namespace std::chrono;
 int main(int argc, const char * argv[]) {
 // **************************************************************************
     //
-    int prime = 11;
-    ofstream outputStream;
+    int prime = 13;
     grid plane1;
-    vector<int> indicies;
+    vector < vector<int> > indicies;
     vector<Point> locations;
-    vector<bool> location_state(prime, false);
+    vector<Point> empty_locations;
+    vector<bool> location_state(16, false);
     unsigned seed = static_cast<int> (system_clock::now().time_since_epoch().count());
     mt19937 generator(seed);
     uniform_int_distribution<int> distribution(0,(16-1));
-    
+    vector< vector<int> > index_list(prime);
+    ifstream inputStream;
+    vector<Mat> images;
     //
-    outputStream.open("/Users/avitullo/Documents/imageLabeling-test.txt", ios::out | ios::app);
-    if (!outputStream)   // Test for error.
-    {
-        std::cerr << "Error opening output file:\n";
-        exit(1);
+    inputStream.open("/Users/avitullo/Documents/nCk-(n=16,k=13).txt");
+    if (!inputStream) {
+        cout << endl << "-=ERROR: Input file not found or unable to open.=-" << endl;
+        return 9;
     }
-    //
-    for (int i=0; i<prime; i++) {
-        int num = distribution(generator);
-        //
-        if (location_state[num] == false) {
-            indicies.push_back(num);
-            location_state[num] = true;
+    else {
+        int count =0;
+        int i_num;
+        vector<int> temp;
+        while (inputStream >> i_num) {
+            temp.push_back(i_num);
+            count++;
+            if (count==prime) {
+                count=0;
+                indicies.push_back(temp);
+                temp.clear();
+            }
         }
-        else{
-        
-            while (location_state[num] == true) {
-                num = distribution(generator);
-            }
-                indicies.push_back(num);
-                location_state[num] = true;
-            }
-        cout << endl << "Num> " << num << "\t Location state> " << location_state[num]  << endl;
     }
+    //
     for (int i=0; i<indicies.size(); i++) {
-        locations.push_back(plane1.get_grid_index(indicies[i]));
+        for (int j=0; j<indicies[i].size(); j++) {
+            Point temp;
+            temp = plane1.get_grid_index(indicies[i][j]);
+            location_state[indicies[i][j]] = true;
+            locations.push_back(temp);
+        }
+        
+        for (int k=0; k<location_state.size(); k++) {
+            if (location_state[k]==false) {
+                empty_locations.push_back(plane1.get_grid_index(k));
+            }
+        }
+        grid plane2(locations, BRIGHT);
+        grid plane3(empty_locations, BRIGHT);
+        plane2.update_grid_image();
+        plane3.update_grid_image();
+        vector<Mat> planes;
+        planes.push_back(plane1.get_grid_image());
+        planes.push_back(plane2.get_grid_image());
+        planes.push_back(plane3.get_grid_image());
+        Mat image(plane1.get_grid_image());
+        merge(planes, image);
+        images.push_back(image);
+        fill(location_state.begin(), location_state.end(), false);
+        locations.clear();
+        empty_locations.clear();
+        //
+        string filename = "/Users/avitullo/Documents/Images/16C13/";
+        string filename_add;
+        system_clock::time_point today = system_clock::now();
+        time_t tt;
+        tt = system_clock::to_time_t ( today );
+        filename_add = ctime(&tt);
+        filename.append(filename_add);
+        filename.append(to_string(i));
+        filename.append(".png");
+        imwrite(filename, images[i]);
     }
-    grid plane2(locations);
-    plane2.update_grid_image();
-    //
-    imwrite("/Users/avitullo/Documents/imageLabeling-test3.png", plane2.get_grid_image());
-    //
-    outputStream.close();
+
     //
     return 0;
 }
