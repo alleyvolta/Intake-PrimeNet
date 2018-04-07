@@ -1,0 +1,1 @@
+Unique image arrangements of 13 cells on a grid of 16(4x4) positions.
