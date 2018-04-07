@@ -16,11 +16,12 @@
 using namespace std;
 using namespace cv;
 
-//
-const int SCALING_FACTOR = 4;
+// CELL_SIZE * BLOCK_SIZE must == GRID_SIZE /SCALING_FACTOR
+//const int N = 16; //    N should be greater than 2, and certainly greater than 1.
 const int GRID_SIZE = 256;
-const int CELL_SIZE = 4;
-const int BLOCK_SIZE = 32;
+const int SCALING_FACTOR = 4;
+const int CELL_SIZE = 8;
+const int BLOCK_SIZE = 8;
 
 enum INTENSITY:uchar {DARK=0, BRIGHT=255};
 
@@ -262,7 +263,7 @@ grid::grid(){
     m_index_grid();
 };
 grid::grid(vector<Point> cell_locations){
-    Mat blank_image(GRID_SIZE, GRID_SIZE, CV_8UC1, Scalar(127));
+    Mat blank_image(GRID_SIZE+1, GRID_SIZE+1, CV_8UC1, Scalar(127));
     blank_image.copyTo(grid_image);
     set_grid_size(GRID_SIZE);
     m_index_grid();
@@ -323,14 +324,10 @@ void grid::m_index_grid(){
     for (int i=0; i<SCALING_FACTOR; i++) {
         for (int j=0; j<SCALING_FACTOR; j++) {
             Point temp;
-            if(j!=0)
-                temp.x = (j*(get_grid_size()/ SCALING_FACTOR)) -1;
-            else
-                temp.x = 0;
-            if(i!=0)
-                temp.y = (i*(get_grid_size()/ SCALING_FACTOR)) -1;
-            else
-                temp.y = 0;
+
+                temp.x = (j*(get_grid_size()/ SCALING_FACTOR)) ;
+                temp.y = (i*(get_grid_size()/ SCALING_FACTOR)) ;
+
             grid_index.push_back(temp);
             grid_index_ID.push_back(ID);
             ID++;
@@ -393,22 +390,50 @@ using namespace std::chrono;
 int main(int argc, const char * argv[]) {
 // **************************************************************************
     //
-    int prime = 13;
-    grid plane1;
-    vector < vector<int> > indicies;
-    vector<Point> locations;
-    vector<Point> empty_locations;
-    vector<bool> location_state(16, false);
-    unsigned seed = static_cast<int> (system_clock::now().time_since_epoch().count());
-    mt19937 generator(seed);
-    uniform_int_distribution<int> distribution(0,(16-1));
-    vector< vector<int> > index_list(prime);
+    vector<string> input_files;
+    string directory = "/Users/avitullo/Documents/PrimeNet/Labels/";
+    string text_filename = "/Users/avitullo/Documents/PrimeNet/Labels/train.txt";
+    string inputfile_log = "/Users/avitullo/Documents/PrimeNet/Labels/input_log.txt";
     ifstream inputStream;
-    vector<Mat> images;
+    ofstream outputstream;
     //
-    inputStream.open("/Users/avitullo/Documents/nCk-(n=16,k=13).txt");
+    inputStream.open(inputfile_log);
     if (!inputStream) {
-        cout << endl << "-=ERROR: Input file not found or unable to open.=-" << endl;
+        cout << endl << "-=ERROR: Input LOG file not found or unable to open.=-" << endl;
+        return 9;
+    }
+    //
+    while (!inputStream.eof()) {
+        string temp;
+        getline(inputStream, temp);
+        input_files.push_back(temp);
+    }
+    inputStream.close();
+    //
+    for(int i=0; i<input_files.size(); i++) {
+        //
+        string training_file = input_files[i];
+        string file_location = directory;
+        file_location.append(training_file);
+        char open_brackets = '(';
+        string N_char;
+        char closed_brackets = ')';
+        string K_char;
+        size_t obN = input_files[i].find(open_brackets);
+        size_t cbN = input_files[i].find(closed_brackets);
+        size_t obK = input_files[i].find(open_brackets, obN+1);
+        size_t cbK = input_files[i].find(closed_brackets, obK-1);
+        
+        N_char = input_files[i].substr(obN+1, (cbN-obN)-1);
+        K_char = input_files[i].substr(obK+1, (cbK-obK)-1);
+        
+        //int N = stoi(N_char);
+        int K = stoi(K_char);
+        vector < vector<int> > indicies;
+    //
+    inputStream.open(file_location);
+    if (!inputStream) {
+        cout << endl << "-=ERROR: Input TRAINING file not found or unable to open.=-" << endl;
         return 9;
     }
     else {
@@ -418,14 +443,29 @@ int main(int argc, const char * argv[]) {
         while (inputStream >> i_num) {
             temp.push_back(i_num);
             count++;
-            if (count==prime) {
+            if (count==K) {
                 count=0;
                 indicies.push_back(temp);
                 temp.clear();
             }
         }
     }
+    inputStream.close();
+    file_location = "";
     //
+    outputstream.open(text_filename, std::ios_base::app);
+    if(!outputstream) {
+        cout << endl << "Could not open training text file." << endl;
+        return 9;
+    }
+    //
+        int count = 0;
+        grid plane1;
+        vector<Mat> images;
+        vector<Point> locations;
+        vector<Point> empty_locations;
+        vector<bool> location_state(16, false);
+    
     for (int i=0; i<indicies.size(); i++) {
         for (int j=0; j<indicies[i].size(); j++) {
             Point temp;
@@ -443,6 +483,7 @@ int main(int argc, const char * argv[]) {
         grid plane3(empty_locations, BRIGHT);
         plane2.update_grid_image();
         plane3.update_grid_image();
+        //
         vector<Mat> planes;
         planes.push_back(plane1.get_grid_image());
         planes.push_back(plane2.get_grid_image());
@@ -454,18 +495,32 @@ int main(int argc, const char * argv[]) {
         locations.clear();
         empty_locations.clear();
         //
-        string filename = "/Users/avitullo/Documents/Images/16C13/";
-        string filename_add;
-        system_clock::time_point today = system_clock::now();
-        time_t tt;
-        tt = system_clock::to_time_t ( today );
-        filename_add = ctime(&tt);
-        filename.append(filename_add);
-        filename.append(to_string(i));
-        filename.append(".png");
-        imwrite(filename, images[i]);
+        string image_location = "/Users/avitullo/Documents/PrimeNet/Images/Train/";
+        string image_filename = "img_";
+        image_filename.append(to_string(count));
+        image_filename.append("-");
+        image_filename.append(N_char);
+        image_filename.append("nCk");
+        image_filename.append(K_char);
+        image_filename.append(".png");
+        image_location.append(image_filename);
+        count++;
+        
+        //
+        imwrite(image_location, images[i]);
+        //
+        if (K==2 || K==3 || K==5 || K==7 || K==11 || K==13) {
+            outputstream << image_filename << " 0" << endl;
+        }
+        else {
+            outputstream << image_filename << " 1" << endl;
+        }
     }
-
+    //
+    outputstream.close();
+    images.clear();
+    }
+    
     //
     return 0;
 }
