@@ -497,7 +497,6 @@ int main(int argc, const char * argv[]) {
         Mat image(plane1.get_grid_image());
         merge(planes, image);
         images.push_back(image);
-         
         fill(location_state.begin(), location_state.end(), false);
         locations.clear();
         empty_locations.clear();
