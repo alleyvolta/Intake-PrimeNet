@@ -392,10 +392,8 @@ int main(int argc, const char * argv[]) {
     //
     vector<string> input_files;
     string directory = "/Users/avitullo/Documents/PrimeNet/Labels/";
-    string text_filename = "/Users/avitullo/Documents/PrimeNet/Labels/train.txt";
     string inputfile_log = "/Users/avitullo/Documents/PrimeNet/Labels/input_log.txt";
     ifstream inputStream;
-    ofstream outputstream;
     //
     inputStream.open(inputfile_log);
     if (!inputStream) {
@@ -423,10 +421,8 @@ int main(int argc, const char * argv[]) {
         size_t cbN = input_files[i].find(closed_brackets);
         size_t obK = input_files[i].find(open_brackets, obN+1);
         size_t cbK = input_files[i].find(closed_brackets, obK-1);
-        
         N_char = input_files[i].substr(obN+1, (cbN-obN)-1);
         K_char = input_files[i].substr(obK+1, (cbK-obK)-1);
-        
         //int N = stoi(N_char);
         int K = stoi(K_char);
         vector < vector<int> > indicies;
@@ -450,15 +446,24 @@ int main(int argc, const char * argv[]) {
             }
         }
     }
-    inputStream.close();
-    file_location = "";
-    //
-    outputstream.open(text_filename, std::ios_base::app);
-    if(!outputstream) {
-        cout << endl << "Could not open training text file." << endl;
-        return 9;
-    }
-    //
+        inputStream.close();
+        file_location = "";
+        //
+        string train_text_filename = "/Users/avitullo/Documents/PrimeNet/data/pncnnc18/train.txt";
+        string val_text_filename = "/Users/avitullo/Documents/PrimeNet/data/pncnnc18/val.txt";
+        ofstream outputstream_train;
+        ofstream outputstream_val;
+        outputstream_train.open(train_text_filename, std::ios_base::app);
+        outputstream_val.open(val_text_filename, std::ios_base::app);
+        if(!outputstream_train) {
+            cout << endl << "Could not open training text file." << endl;
+            return 9;
+        }
+        if(!outputstream_val) {
+            cout << endl << "Could not open validation text file." << endl;
+            return 9;
+        }
+        //
         int count = 0;
         grid plane1;
         vector<Mat> images;
@@ -479,6 +484,7 @@ int main(int argc, const char * argv[]) {
                 empty_locations.push_back(plane1.get_grid_index(k));
             }
         }
+        
         grid plane2(locations, BRIGHT);
         grid plane3(empty_locations, BRIGHT);
         plane2.update_grid_image();
@@ -491,34 +497,49 @@ int main(int argc, const char * argv[]) {
         Mat image(plane1.get_grid_image());
         merge(planes, image);
         images.push_back(image);
+         
         fill(location_state.begin(), location_state.end(), false);
         locations.clear();
         empty_locations.clear();
         //
-        string image_location = "/Users/avitullo/Documents/PrimeNet/Images/Train/";
+        string train_image_location = "/Users/avitullo/Documents/PrimeNet/Images/Train/";
+        string val_image_location = "/Users/avitullo/Documents/PrimeNet/Images/Validation/";
         string image_filename = "img_";
         image_filename.append(to_string(count));
         image_filename.append("-");
         image_filename.append(N_char);
         image_filename.append("nCk");
         image_filename.append(K_char);
-        image_filename.append(".png");
-        image_location.append(image_filename);
-        count++;
+        image_filename.append(".jpg");
         
+        count++;
         //
-        imwrite(image_location, images[i]);
-        //
-        if (K==2 || K==3 || K==5 || K==7 || K==11 || K==13) {
-            outputstream << image_filename << " 0" << endl;
+        if (K==3 || K==5 || K==7 || K==13) {
+            outputstream_train << image_filename << " 0" << endl;
+            train_image_location.append(image_filename);
+            //imwrite(train_image_location, images[i]);
         }
-        else {
-            outputstream << image_filename << " 1" << endl;
+        else if(K==1 || K==6 || K==10 || K==12 || K==14 || K==15 || K==16) {
+            outputstream_train << image_filename << " 1" << endl;
+            train_image_location.append(image_filename);
+           imwrite(train_image_location, images[i]);
         }
+        if (K==2 || K==11) {
+            outputstream_val << image_filename << " 0" << endl;
+            val_image_location.append(image_filename);
+            imwrite(val_image_location, images[i]);
+        }
+        else if(K==8 || K==4) {
+            outputstream_val << image_filename << " 1" << endl;
+            val_image_location.append(image_filename);
+            imwrite(val_image_location, images[i]);
+        }
+        
     }
     //
-    outputstream.close();
-    images.clear();
+        outputstream_train.close();
+        outputstream_val.close();
+        images.clear();
     }
     
     //
